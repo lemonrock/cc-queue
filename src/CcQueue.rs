@@ -5,18 +5,22 @@
 /// This is the cc queue object.
 /// It is safe to send references between threads.
 /// Each thread accessing the queue should call `new_per_thread_handle`.
+/// The queue supports being dropped and all Nodes being freed, however...
+/// It does not have any way to free the data owned by the nodes, so a memory leak is quite likely.
+/// Instead, it is better to call `clear()` with a callback which can free node data, which requires that there are no `PerQueueThreadHandle` in existence, even for the current thread.
+/// Rust's borrow checker should be able to enforce this.
 #[derive(Debug)]
-pub struct Queue<T, A: Allocator>(NonNull<QueueInternal<T, A>>);
+pub struct CcQueue<T, A: Allocator>(NonNull<QueueInternal<T, A>>);
 
-unsafe impl<T, A: Allocator> Send for Queue<T, A>
+unsafe impl<T, A: Allocator> Send for CcQueue<T, A>
 {
 }
 
-unsafe impl<T, A: Allocator> Sync for Queue<T, A>
+unsafe impl<T, A: Allocator> Sync for CcQueue<T, A>
 {
 }
 
-impl<T, A: Allocator> AllocatorOpened<A> for Queue<T, A>
+impl<T, A: Allocator> AllocatorOpened<A> for CcQueue<T, A>
 {
 	#[inline(always)]
 	fn allocator_opened(&mut self, allocator: A)
@@ -25,7 +29,7 @@ impl<T, A: Allocator> AllocatorOpened<A> for Queue<T, A>
 	}
 }
 
-impl<T, A: Allocator> Drop for Queue<T, A>
+impl<T, A: Allocator> Drop for CcQueue<T, A>
 {
 	#[inline(always)]
 	fn drop(&mut self)
@@ -37,13 +41,15 @@ impl<T, A: Allocator> Drop for Queue<T, A>
 	}
 }
 
-impl<T, A: Allocator> Queue<T, A>
+impl<T, A: Allocator> CcQueue<T, A>
 {
 	/// Create a new queue.
+	/// Specify an allocator implementation which provides memory for the queue and its nodes.
+	/// This can be the heap, or it can be a persistent memory or mmap'd file.
 	#[inline(always)]
 	pub fn new(allocator: A) -> Self
 	{
-		Queue(QueueInternal::new(allocator))
+		CcQueue(QueueInternal::new(allocator))
 	}
 	
 	/// Create a new per-thread handle.
@@ -51,5 +57,12 @@ impl<T, A: Allocator> Queue<T, A>
 	pub fn new_per_thread_handle<'queue>(&'queue self) -> PerQueueThreadHandle<'queue, T, A>
 	{
 		PerQueueThreadHandle(self, PerQueueThreadHandleInternal::new(unsafe { self.0.as_ref() }.allocator().clone()))
+	}
+	
+	/// Clear the queue
+	#[inline(always)]
+	pub fn clear(&mut self)
+	{
+		unimplemented!();
 	}
 }

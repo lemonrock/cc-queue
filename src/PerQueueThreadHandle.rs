@@ -4,7 +4,7 @@
 
 /// This structure is allocated for each thread that wants to access a queue.
 #[derive(Debug)]
-pub struct PerQueueThreadHandle<'queue, T: 'queue, A: 'queue + Allocator>(&'queue Queue<T, A>, NonNull<PerQueueThreadHandleInternal<T, A>>);
+pub struct PerQueueThreadHandle<'queue, T: 'queue, A: 'queue + Allocator>(&'queue CcQueue<T, A>, NonNull<PerQueueThreadHandleInternal<T, A>>);
 
 impl<'queue, T, A: Allocator> Drop for PerQueueThreadHandle<'queue, T, A>
 {
@@ -19,6 +19,7 @@ impl<'queue, T, A: Allocator> Drop for PerQueueThreadHandle<'queue, T, A>
 
 impl<'queue, T, A: Allocator> PerQueueThreadHandle<'queue, T, A>
 {
+	/// Enqueue data.
 	#[inline(always)]
 	pub fn enqueue(&mut self, data: NonNull<T>)
 	{
@@ -27,6 +28,7 @@ impl<'queue, T, A: Allocator> PerQueueThreadHandle<'queue, T, A>
 		queue.enqueue(self.handle(), data)
 	}
 	
+	/// Dequeue data.
 	#[inline(always)]
 	pub fn dequeue(&mut self) -> Option<NonNull<T>>
 	{

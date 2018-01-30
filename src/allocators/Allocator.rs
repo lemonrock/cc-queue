@@ -6,8 +6,10 @@
 /// Allocators must implement a simple clone that returns an object that refers to the same memory pool.
 pub trait Allocator: Clone
 {
+	/// Page size on this architecture.
 	const PAGE_SIZE: usize = 4096;
 	
+	/// Cache line size on this architecture.
 	const CACHE_LINE_SIZE: usize = 64;
 	
 	/// allocators memory like alloc, but aligned on page size.

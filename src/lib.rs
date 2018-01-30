@@ -4,6 +4,27 @@
 
 #![feature(allocator_api)]
 #![feature(integer_atomics)]
+#![deny(missing_docs)]
+
+
+//! # cc-queue
+//! A CC Queue, which is:-
+//! * Non-blocking
+//! * Thread-safe
+//! * Concurrent
+//! * Unbounded
+//! * Faster than the MSQueue (Michael-Scott Queue, as used in Java)
+//!
+//! And suitable for use with multiple memory allocators, including ones that use persistent memory.
+//!
+//! ## To use it
+//! 1. Create a new instance of `CCQueue`.
+//! 2. Create a handle per-thread using `CCQueue.new_per_thread_handle()`.
+//! 3. Enqueue and dequeue
+//!
+//! ## Notes on the API
+//! The API may need to change to make it easier to manage the per-thread handle objects.
+//!
 
 
 use self::allocators::*;
@@ -27,11 +48,11 @@ use ::std::sync::atomic::spin_loop_hint as PAUSE;
 pub mod allocators;
 
 
+include!("CcQueue.rs");
 include!("IsNotNull.rs");
 include!("Node.rs");
 include!("PerQueueThreadHandle.rs");
 include!("PerQueueThreadHandleInternal.rs");
-include!("Queue.rs");
 include!("QueueInternal.rs");
 include!("Status.rs");
 include!("Synch.rs");

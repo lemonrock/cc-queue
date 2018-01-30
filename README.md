@@ -1,6 +1,6 @@
 # cc-queue
 
-[cc-queue] is an implementation in Rust of a non-blocking, unbounded queue based on the `CC Queue` algorithm.
+[cc-queue] is an implementation in Rust of a non-blocking, unbounded queue called "Concurrency Control Queue", also known as `CCQueue`.
 
 
 ## Licensing

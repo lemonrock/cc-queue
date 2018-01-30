@@ -4,9 +4,9 @@
 
 [package]
 name = "cc-queue"
-description = "cc-queue"
+description = "CC Queue, ccqueue, an unbounded, non-blocking queue suitable for use with different memory allocators."
 categories = ["data-structures", "concurrency"]
-keywords = ["cc-queue", "queue", "non-blocking", "lock-free", "concurrent"]
+keywords = ["queue", "non-blocking", "lock-free", "concurrent", "unbounded"]
 license = "MIT"
 authors = ["Raphael Cohn <raphael.cohn@stormmq.com>"]
 homepage = "https://github.com/lemonrock/cc-queue"
