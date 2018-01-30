@@ -13,15 +13,24 @@ struct Node<T>
 impl<T> Node<T>
 {
 	#[inline(always)]
-	fn clearing_queue_drop<A: Allocator>(this: NonNull<Self>, allocator: &mut A)
+	fn clearing_queue_drop<A: Allocator, FreeData: Fn(NonNull<T>)>(this: NonNull<Self>, allocator: &mut A, free_data: &FreeData)
 	{
 		let x = unsafe { this.as_ref() };
-		if x.next.is_not_null()
+		
+		let next = x.next;
+		if next.is_not_null()
 		{
-			Self::clearing_queue_drop(unsafe { NonNull::new_unchecked(x.next) }, allocator);
+			Self::clearing_queue_drop(unsafe { NonNull::new_unchecked(next) }, allocator, free_data);
 		}
+		
+		// dummy_node is created with a dangling data pointer
+		let data = x.data;
+		if data.as_ptr() != NonNull::dangling().as_ptr()
+		{
+			free_data(data);
+		}
+		
 		Self::free_after_drop(this, allocator)
-		// FIXME: free this.data !!!
 	}
 	
 	#[inline(always)]

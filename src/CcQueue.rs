@@ -59,10 +59,12 @@ impl<T, A: Allocator> CcQueue<T, A>
 		PerQueueThreadHandle(self, PerQueueThreadHandleInternal::new(unsafe { self.0.as_ref() }.allocator().clone()))
 	}
 	
-	/// Clear the queue
+	/// Clear the queue.
+	/// Only works on a queue that is acquiescent.
 	#[inline(always)]
-	pub fn clear(&mut self)
+	pub fn clear<FreeData: Fn(NonNull<T>)>(&mut self, free_data: FreeData)
 	{
-		unimplemented!();
+		let mut queue_internal = self.0;
+		unsafe { queue_internal.as_mut() }.clear(&free_data)
 	}
 }

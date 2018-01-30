@@ -34,25 +34,7 @@ impl<T, A: Allocator> Drop for QueueInternal<T, A>
 	#[inline(always)]
 	fn drop(&mut self)
 	{
-		#[inline(always)]
-		fn drop_node<T, A: Allocator>(node: &UnsafeCell<NonNull<Node<T>>>, allocator: &mut A)
-		{
-			let node = unsafe { *node.get() };
-			Node::clearing_queue_drop(node, allocator)
-		}
-		
-		let allocator = self.allocator();
-		
-		// head and tail can be the same (see `new` below)!
-		if self.head.get() != self.tail.get()
-		{
-			drop_node(&self.head, allocator);
-			drop_node(&self.tail, allocator);
-		}
-		else
-		{
-			drop_node(&self.head, allocator);
-		}
+		self.clear(&|_data|{});
 	}
 }
 
@@ -91,6 +73,33 @@ impl<T, A: Allocator> QueueInternal<T, A>
 		}
 		
 		queue
+	}
+	
+	/// Clear the queue.
+	/// Only works on a queue that is acquiescent.
+	/// Similar in some ways to `drop()`.
+	#[inline(always)]
+	fn clear<FreeData: Fn(NonNull<T>)>(&mut self, free_data: &FreeData)
+	{
+		#[inline(always)]
+		fn drop_node<T, A: Allocator, FreeData: Fn(NonNull<T>)>(node: &UnsafeCell<NonNull<Node<T>>>, allocator: &mut A, free_data: &FreeData)
+		{
+			let node = unsafe { *node.get() };
+			Node::clearing_queue_drop(node, allocator, free_data)
+		}
+		
+		let allocator = self.allocator();
+		
+		// head and tail can be the same (see `new` below)!
+		if self.head.get() != self.tail.get()
+		{
+			drop_node(&self.head, allocator, free_data);
+			drop_node(&self.tail, allocator, free_data);
+		}
+		else
+		{
+			drop_node(&self.head, allocator, free_data);
+		}
 	}
 	
 	// handle is a per-thread object
