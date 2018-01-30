@@ -15,7 +15,7 @@ exclude = ["*"]
 include = ["README.md", "LICENSE", "COPYRIGHT", "src/**/*.rs", "Cargo.toml", "rustfmt.toml", "clippy.toml"]
 # Relative to Cargo.toml
 readme = "README.md"
-publish = false
+publish = true
 version = "0.0.0"
 
 [profile.release]
